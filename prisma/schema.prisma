@@ -1,0 +1,229 @@
+// Jejak Nasab - Database Schema
+// Silsilah Keluarga (Family Tree) Application
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ==========================================
+// USER TIER (Subscription Classes)
+// ==========================================
+
+model UserTier {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  color            String   @default("#6B7280")
+  maxBanis         Int      @default(1) @map("max_banis")
+  maxGenerations   Int      @default(10) @map("max_generations")
+  canGeneratePdf   Boolean  @default(false) @map("can_generate_pdf")
+  canGenerateImage Boolean  @default(false) @map("can_generate_image")
+  isDefault        Boolean  @default(false) @map("is_default")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("user_tiers")
+}
+
+// ==========================================
+// USER & AUTH
+// ==========================================
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      UserRole   @default(USER)
+  status    UserStatus @default(PENDING)
+  avatar    String?
+  tierId    String?    @map("tier_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  tier          UserTier?     @relation(fields: [tierId], references: [id], onDelete: SetNull)
+  createdBanis  Bani[]        @relation("BaniCreator")
+  baniUsers     BaniUser[]
+  addedMembers  Member[]      @relation("MemberAddedBy")
+  activityLogs  ActivityLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+// ==========================================
+// BANI (Family Lineage)
+// ==========================================
+
+model Bani {
+  id              String          @id @default(uuid())
+  name            String
+  description     String?         @db.Text
+  coverImage      String?         @map("cover_image")
+  treeOrientation TreeOrientation @default(VERTICAL) @map("tree_orientation")
+  isPublic        Boolean         @default(false) @map("is_public")
+  showWaPublic    Boolean         @default(false) @map("show_wa_public")
+  showBirthPublic Boolean         @default(false) @map("show_birth_public")
+  showAddressPublic Boolean       @default(false) @map("show_address_public")
+  showSocmedPublic Boolean        @default(false) @map("show_socmed_public")
+  createdById     String          @map("created_by_id")
+  rootMemberId    String?         @unique @map("root_member_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy    User          @relation("BaniCreator", fields: [createdById], references: [id])
+  rootMember   Member?       @relation("BaniRoot", fields: [rootMemberId], references: [id])
+  baniUsers    BaniUser[]
+  members      Member[]      @relation("BaniMembers")
+  activityLogs ActivityLog[]
+
+  @@map("banis")
+}
+
+enum TreeOrientation {
+  VERTICAL
+  HORIZONTAL
+}
+
+// ==========================================
+// BANI USER (Collaborative Access)
+// ==========================================
+
+model BaniUser {
+  id       String       @id @default(uuid())
+  baniId   String       @map("bani_id")
+  userId   String       @map("user_id")
+  role     BaniUserRole @default(EDITOR)
+  joinedAt DateTime     @default(now()) @map("joined_at")
+
+  // Relations
+  bani Bani @relation(fields: [baniId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([baniId, userId])
+  @@map("bani_users")
+}
+
+enum BaniUserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// ==========================================
+// MEMBER (Family Tree Person)
+// ==========================================
+
+model Member {
+  id            String   @id @default(uuid())
+  baniId        String   @map("bani_id")
+  fullName      String   @map("full_name")
+  nickname      String?
+  gender        Gender
+  birthDate     DateTime? @map("birth_date") @db.Date
+  birthPlace    String?   @map("birth_place")
+  deathDate     DateTime? @map("death_date") @db.Date
+  isAlive       Boolean   @default(true) @map("is_alive")
+  address       String?
+  city          String?
+  phoneWhatsapp String?   @map("phone_whatsapp")
+  socialMedia   Json?     @default("{}") @map("social_media")
+  photo         String?
+  bio           String?   @db.Text
+  fatherId      String?   @map("father_id")
+  motherId      String?   @map("mother_id")
+  generation    Int       @default(0)
+  addedById     String?   @map("added_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  bani          Bani       @relation("BaniMembers", fields: [baniId], references: [id], onDelete: Cascade)
+  father        Member?    @relation("FatherChildren", fields: [fatherId], references: [id], onDelete: SetNull)
+  mother        Member?    @relation("MotherChildren", fields: [motherId], references: [id], onDelete: SetNull)
+  childrenAsFather Member[] @relation("FatherChildren")
+  childrenAsMother Member[] @relation("MotherChildren")
+  addedBy       User?      @relation("MemberAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+
+  // Marriage relations
+  marriagesAsHusband Marriage[] @relation("Husband")
+  marriagesAsWife    Marriage[] @relation("Wife")
+
+  // Root of bani
+  rootOfBani Bani? @relation("BaniRoot")
+
+  @@index([baniId])
+  @@index([fatherId])
+  @@index([motherId])
+  @@map("members")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+// ==========================================
+// MARRIAGE
+// ==========================================
+
+model Marriage {
+  id           String    @id @default(uuid())
+  husbandId    String    @map("husband_id")
+  wifeId       String    @map("wife_id")
+  marriageDate DateTime? @map("marriage_date") @db.Date
+  divorceDate  DateTime? @map("divorce_date") @db.Date
+  isActive     Boolean   @default(true) @map("is_active")
+  marriageOrder Int      @default(1) @map("marriage_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  husband Member @relation("Husband", fields: [husbandId], references: [id], onDelete: Cascade)
+  wife    Member @relation("Wife", fields: [wifeId], references: [id], onDelete: Cascade)
+
+  @@map("marriages")
+}
+
+// ==========================================
+// ACTIVITY LOG
+// ==========================================
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  baniId     String?  @map("bani_id")
+  action     String   // CREATE, UPDATE, DELETE
+  entityType String   @map("entity_type") // MEMBER, MARRIAGE, BANI
+  entityId   String?  @map("entity_id")
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  description String? @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bani Bani? @relation(fields: [baniId], references: [id], onDelete: Cascade)
+
+  @@index([baniId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
