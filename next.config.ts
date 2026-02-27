@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   },
 
   // Server external packages (for Prisma)
-  serverExternalPackages: ["@prisma/client", "pg"],
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-mariadb", "mariadb"],
 
   // Strict mode for React
   reactStrictMode: true,
