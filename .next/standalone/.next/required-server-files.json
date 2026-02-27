@@ -302,6 +302,13 @@
         "./node_modules/.prisma/**/*"
       ]
     },
+    "outputFileTracingExcludes": {
+      "/**": [
+        "./node_modules/@img/sharp-win32-x64/**",
+        "./node_modules/@img/sharp-win32-ia32/**",
+        "./node_modules/sharp/**"
+      ]
+    },
     "turbopack": {
       "root": "C:\\laragon\\www\\Nasab"
     },

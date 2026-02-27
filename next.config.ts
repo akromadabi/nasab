@@ -24,6 +24,15 @@ const nextConfig: NextConfig = {
     "/**": ["./src/generated/prisma/**/*", "./node_modules/.prisma/**/*"],
   },
 
+  // Exclude Windows-specific native binaries (crash on Linux)
+  outputFileTracingExcludes: {
+    "/**": [
+      "./node_modules/@img/sharp-win32-x64/**",
+      "./node_modules/@img/sharp-win32-ia32/**",
+      "./node_modules/sharp/**",
+    ],
+  },
+
   // Headers for security
   async headers() {
     return [
