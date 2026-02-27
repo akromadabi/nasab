@@ -296,6 +296,12 @@
       "@prisma/adapter-mariadb",
       "mariadb"
     ],
+    "outputFileTracingIncludes": {
+      "/**": [
+        "./src/generated/prisma/**/*",
+        "./node_modules/.prisma/**/*"
+      ]
+    },
     "turbopack": {
       "root": "C:\\laragon\\www\\Nasab"
     },

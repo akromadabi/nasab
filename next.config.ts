@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
   // Output configuration for deployment
   output: "standalone",
 
+  // Force include Prisma generated files (WASM query compiler) in standalone
+  outputFileTracingIncludes: {
+    "/**": ["./src/generated/prisma/**/*", "./node_modules/.prisma/**/*"],
+  },
+
   // Headers for security
   async headers() {
     return [
