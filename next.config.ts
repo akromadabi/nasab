@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     remotePatterns: [],
-    unoptimized: false,
+    unoptimized: true,
   },
 
   // Server external packages (for Prisma)
