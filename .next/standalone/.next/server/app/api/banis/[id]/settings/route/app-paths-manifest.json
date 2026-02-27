@@ -1,0 +1,3 @@
+{
+  "/api/banis/[id]/settings/route": "app/api/banis/[id]/settings/route.js"
+}
