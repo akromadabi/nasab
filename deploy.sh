@@ -14,12 +14,16 @@ ENV_FILE="$APP_DIR/.env"
 echo "🚀 Memulai deployment Jejak Nasab..."
 echo "========================================"
 
-# 1. Pull latest dari GitHub
+# 1. Pull latest dari GitHub (skip jika bukan git repo)
 echo ""
 echo "📥 [1/7] Pulling dari GitHub..."
 cd "$APP_DIR"
-git pull origin master
-echo "✅ Pull selesai."
+if [ -d ".git" ]; then
+    git pull origin master
+    echo "✅ Pull selesai."
+else
+    echo "⚠️  Bukan git repo (deploy via ZIP). Skip git pull."
+fi
 
 # 2. Cek & buat .env jika belum ada
 echo ""
