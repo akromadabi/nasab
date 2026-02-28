@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   },
 
   // Server external packages (for Prisma)
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-mariadb", "mariadb"],
+  serverExternalPackages: ["@prisma/client", "pg"],
 
   // Strict mode for React
   reactStrictMode: true,
@@ -18,20 +18,6 @@ const nextConfig: NextConfig = {
 
   // Output configuration for deployment
   output: "standalone",
-
-  // Force include Prisma generated files (WASM query compiler) in standalone
-  outputFileTracingIncludes: {
-    "/**": ["./src/generated/prisma/**/*", "./node_modules/.prisma/**/*"],
-  },
-
-  // Exclude Windows-specific native binaries (crash on Linux)
-  outputFileTracingExcludes: {
-    "/**": [
-      "./node_modules/@img/sharp-win32-x64/**",
-      "./node_modules/@img/sharp-win32-ia32/**",
-      "./node_modules/sharp/**",
-    ],
-  },
 
   // Headers for security
   async headers() {

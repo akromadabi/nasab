@@ -3,23 +3,13 @@ import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 
-function parseDatabaseUrl(url: string) {
-    try {
-        const parsed = new URL(url);
-        return {
-            host: parsed.hostname || "localhost",
-            port: parseInt(parsed.port) || 3306,
-            user: decodeURIComponent(parsed.username) || "root",
-            password: decodeURIComponent(parsed.password) || "",
-            database: parsed.pathname.replace("/", "") || "jejak_nasab",
-        };
-    } catch {
-        return { host: "localhost", port: 3306, user: "root", password: "", database: "jejak_nasab" };
-    }
-}
-
-const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL || "");
-const adapter = new PrismaMariaDb(dbConfig);
+const adapter = new PrismaMariaDb({
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "",
+    database: "jejak_nasab",
+});
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
