@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
     ZoomIn,
     ZoomOut,
@@ -36,9 +37,12 @@ import {
     ArrowDownUp,
     Smartphone,
     CalendarDays,
+    Palette,
+    Flower2,
 } from "lucide-react";
 import { getWhatsAppLink } from "@/lib/utils";
 import ExportTree from "@/components/ExportTree";
+import { TREE_THEMES, THEME_KEYS, type ThemeKey, type TreeThemeConfig } from "@/lib/treeThemes";
 
 // ============================================
 // Social Media Platforms Config
@@ -203,8 +207,8 @@ interface TreeMember {
     address?: string | null;
     bio?: string | null;
     socialMedia?: Record<string, string> | null;
-    marriagesAsHusband?: { wife: SpouseInfo }[];
-    marriagesAsWife?: { husband: SpouseInfo }[];
+    marriagesAsHusband?: { id: string; wife: SpouseInfo }[];
+    marriagesAsWife?: { id: string; husband: SpouseInfo }[];
 }
 
 interface MemberData {
@@ -506,7 +510,7 @@ function QuickAddModal({
                     {type === "child" && (
                         <div className="p-3 rounded-xl bg-primary-50 border border-primary-100">
                             <p className="text-xs font-medium text-primary-700">
-                                {member.gender === "MALE" ? "👨 Ayah" : "👩 Ibu"}:{" "}
+                                {member.gender === "MALE" ? "Ayah" : "Ibu"}:{" "}
                                 <span className="font-bold">{member.fullName}</span>
                             </p>
                         </div>
@@ -517,12 +521,12 @@ function QuickAddModal({
                             <p className="text-xs text-blue-600">Orang tua yang sama dengan {member.fullName}:</p>
                             {member.fatherId && (
                                 <p className="text-xs font-medium text-blue-700">
-                                    👨 Ayah: {allMembers.find((m) => m.id === member.fatherId)?.fullName || "—"}
+                                    Ayah: {allMembers.find((m) => m.id === member.fatherId)?.fullName || "—"}
                                 </p>
                             )}
                             {member.motherId && (
                                 <p className="text-xs font-medium text-blue-700">
-                                    👩 Ibu: {allMembers.find((m) => m.id === member.motherId)?.fullName || "—"}
+                                    Ibu: {allMembers.find((m) => m.id === member.motherId)?.fullName || "—"}
                                 </p>
                             )}
                         </div>
@@ -531,7 +535,7 @@ function QuickAddModal({
                     {type === "spouse" && (
                         <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
                             <p className="text-xs font-medium text-pink-700">
-                                💑 Pasangan dari <span className="font-bold">{member.fullName}</span>
+                                <Heart className="w-3.5 h-3.5 inline" /> Pasangan dari <span className="font-bold">{member.fullName}</span>
                             </p>
                         </div>
                     )}
@@ -540,7 +544,7 @@ function QuickAddModal({
                     {type === "child" && hasOneSpouse && (
                         <div className="p-3 rounded-xl bg-primary-50 border border-primary-100">
                             <p className="text-xs font-medium text-primary-700">
-                                {member.gender === "MALE" ? "👩 Ibu" : "👨 Ayah"}:{" "}
+                                {member.gender === "MALE" ? "Ibu" : "Ayah"}:{" "}
                                 <span className="font-bold">{spouses[0].fullName}</span>
                             </p>
                         </div>
@@ -604,22 +608,22 @@ function QuickAddModal({
                             <button
                                 type="button"
                                 onClick={() => setGender("MALE")}
-                                className={`py-2.5 rounded-xl text-sm font-medium transition-all ${gender === "MALE"
+                                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all ${gender === "MALE"
                                     ? "bg-blue-50 text-blue-700 border-2 border-blue-300"
                                     : "bg-white text-surface-500 border border-surface-200 hover:bg-surface-50"
                                     }`}
                             >
-                                👨 Laki-laki
+                                <User className="w-3.5 h-3.5" /> Laki-laki
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setGender("FEMALE")}
-                                className={`py-2.5 rounded-xl text-sm font-medium transition-all ${gender === "FEMALE"
+                                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all ${gender === "FEMALE"
                                     ? "bg-pink-50 text-pink-700 border-2 border-pink-300"
                                     : "bg-white text-surface-500 border border-surface-200 hover:bg-surface-50"
                                     }`}
                             >
-                                👩 Perempuan
+                                <User className="w-3.5 h-3.5" /> Perempuan
                             </button>
                         </div>
                     </div>
@@ -631,22 +635,22 @@ function QuickAddModal({
                             <button
                                 type="button"
                                 onClick={() => setIsAlive(true)}
-                                className={`py-2.5 rounded-xl text-sm font-medium transition-all ${isAlive
+                                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all ${isAlive
                                     ? "bg-green-50 text-green-700 border-2 border-green-300"
                                     : "bg-white text-surface-500 border border-surface-200 hover:bg-surface-50"
                                     }`}
                             >
-                                ❤️ Hidup
+                                <Heart className="w-3 h-3" /> Hidup
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsAlive(false)}
-                                className={`py-2.5 rounded-xl text-sm font-medium transition-all ${!isAlive
+                                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all ${!isAlive
                                     ? "bg-surface-100 text-surface-700 border-2 border-surface-300"
                                     : "bg-white text-surface-500 border border-surface-200 hover:bg-surface-50"
                                     }`}
                             >
-                                🕊️ Wafat
+                                <Flower2 className="w-3 h-3" /> Wafat
                             </button>
                         </div>
                     </div>
@@ -696,6 +700,7 @@ function TreeNode({
     onShowQuickMenu,
     canEdit = true,
     orientation,
+    theme,
 }: {
     node: TreeNodeData;
     level: number;
@@ -706,6 +711,7 @@ function TreeNode({
     onShowQuickMenu: (node: TreeNodeData) => void;
     canEdit?: boolean;
     orientation?: string;
+    theme: TreeThemeConfig;
 }) {
     const isExpanded = expanded.has(node.id);
     const hasChildren = node.children.length > 0;
@@ -716,16 +722,14 @@ function TreeNode({
         <div
             onClick={() => onSelect(node.id)}
             className={`tree-node relative cursor-pointer rounded-xl sm:rounded-2xl border-2 p-2 sm:p-3 w-28 sm:w-44 text-center transition-all group ${isSelected
-                ? "border-primary-500 bg-primary-50 shadow-lg shadow-primary-500/20"
+                ? `${theme.card.selectedBorder} ${theme.card.selectedBg} shadow-lg`
                 : node.isAlive
-                    ? node.gender === "MALE"
-                        ? "border-blue-200 bg-white hover:border-blue-400"
-                        : "border-pink-200 bg-white hover:border-pink-400"
-                    : "border-surface-200 bg-surface-50 opacity-80 hover:opacity-100"
-                }`}
+                    ? `${theme.card.border} ${theme.card.bg} hover:opacity-90`
+                    : `${theme.card.border} ${theme.card.bg} opacity-80 hover:opacity-100`
+                } ${theme.card.shadow}`}
         >
             {/* Avatar */}
-            <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full mx-auto mb-1 sm:mb-2 flex items-center justify-center ${node.gender === "MALE" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
+            <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full mx-auto mb-1 sm:mb-2 flex items-center justify-center ${node.gender === "MALE" ? `${theme.avatar.maleBg} ${theme.avatar.maleText}` : `${theme.avatar.femaleBg} ${theme.avatar.femaleText}`}`}>
                 {node.photo ? (
                     <img src={node.photo} alt={node.fullName} className="w-9 h-9 sm:w-12 sm:h-12 rounded-full object-cover" />
                 ) : (
@@ -734,27 +738,33 @@ function TreeNode({
             </div>
 
             {/* Name */}
-            <p className="text-xs sm:text-sm font-semibold text-surface-900 truncate">{node.fullName}</p>
-            {node.nickname && <p className="text-[10px] text-surface-400 truncate">({node.nickname})</p>}
+            <p className={`text-xs sm:text-sm font-semibold ${theme.card.textPrimary} truncate`}>{node.fullName}</p>
+            {node.nickname && <p className={`text-[10px] ${theme.card.textMuted} truncate`}>({node.nickname})</p>}
             {!node.isAlive && (
-                <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-surface-200 text-surface-500 mt-1">Alm.</span>
+                <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${theme.badge.deceasedBg} ${theme.badge.deceasedText} mt-1`}>Alm.</span>
             )}
 
-            {/* Spouse label */}
+            {/* Spouse label — clickable for edit, X to remove */}
             {(() => {
-                const spouseNames: string[] = [];
+                const spouseEntries: { marriageId: string; spouseId: string; name: string }[] = [];
                 if (node.gender === "MALE" && node.marriagesAsHusband) {
-                    node.marriagesAsHusband.forEach((m) => spouseNames.push(m.wife.fullName));
+                    node.marriagesAsHusband.forEach((m) => spouseEntries.push({ marriageId: m.id, spouseId: m.wife.id, name: m.wife.fullName }));
                 } else if (node.gender === "FEMALE" && node.marriagesAsWife) {
-                    node.marriagesAsWife.forEach((m) => spouseNames.push(m.husband.fullName));
+                    node.marriagesAsWife.forEach((m) => spouseEntries.push({ marriageId: m.id, spouseId: m.husband.id, name: m.husband.fullName }));
                 }
-                if (spouseNames.length === 0) return null;
+                if (spouseEntries.length === 0) return null;
                 return (
                     <div className="mt-1.5 space-y-0.5">
-                        {spouseNames.map((name, i) => (
-                            <p key={i} className={`text-[9px] sm:text-[10px] truncate px-1.5 py-0.5 rounded-full ${node.gender === "MALE" ? "bg-pink-50 text-pink-500" : "bg-blue-50 text-blue-500"}`}>
-                                💑 {name}
-                            </p>
+                        {spouseEntries.map((entry) => (
+                            <div key={entry.marriageId} className={`flex items-center gap-0.5 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full ${node.gender === "MALE" ? `${theme.spouse.maleBg} ${theme.spouse.maleText}` : `${theme.spouse.femaleBg} ${theme.spouse.femaleText}`}`}>
+                                <span
+                                    className="truncate flex-1 cursor-pointer hover:underline"
+                                    onClick={(e) => { e.stopPropagation(); onSelect(entry.spouseId); }}
+                                    title={`Lihat ${entry.name}`}
+                                >
+                                    <Heart className="w-3 h-3 inline" /> {entry.name}
+                                </span>
+                            </div>
                         ))}
                     </div>
                 );
@@ -811,7 +821,7 @@ function TreeNode({
                 {hasChildren && isExpanded && (
                     <div className="flex flex-row items-center">
                         {/* Horizontal line from parent to vertical bar */}
-                        <div className="h-0.5 w-8 bg-gradient-to-r from-primary-300 to-primary-200" />
+                        <div className={`h-0.5 w-8 bg-gradient-to-r ${theme.line.color}`} />
 
                         {/* Children column with vertical connectors */}
                         <div className="flex flex-col">
@@ -820,13 +830,13 @@ function TreeNode({
                                     {/* Vertical connector bar — top half + bottom half */}
                                     {node.children.length > 1 && (
                                         <div className="flex flex-col w-0.5 self-stretch">
-                                            <div className={`flex-1 w-full ${index === 0 ? "bg-transparent" : "bg-primary-200"}`} />
-                                            <div className={`flex-1 w-full ${index === node.children.length - 1 ? "bg-transparent" : "bg-primary-200"}`} />
+                                            <div className={`flex-1 w-full ${index === 0 ? "bg-transparent" : theme.line.color}`} />
+                                            <div className={`flex-1 w-full ${index === node.children.length - 1 ? "bg-transparent" : theme.line.color}`} />
                                         </div>
                                     )}
 
                                     {/* Horizontal stub from vertical bar to child node */}
-                                    <div className="h-0.5 w-6 bg-primary-200" />
+                                    <div className={`h-0.5 w-6 ${theme.line.color}`} />
 
                                     {/* Child node */}
                                     <div className="py-2 sm:py-3">
@@ -840,6 +850,7 @@ function TreeNode({
                                             onShowQuickMenu={onShowQuickMenu}
                                             canEdit={canEdit}
                                             orientation={orientation}
+                                            theme={theme}
                                         />
                                     </div>
                                 </div>
@@ -860,7 +871,7 @@ function TreeNode({
             {hasChildren && isExpanded && (
                 <div className="flex flex-col items-center">
                     {/* Vertical line from parent down to horizontal bar */}
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-primary-300 to-primary-200" />
+                    <div className={`w-0.5 h-8 bg-gradient-to-b ${theme.line.color}`} />
 
                     {/* Children row with horizontal connectors */}
                     <div className="flex">
@@ -870,16 +881,16 @@ function TreeNode({
                                 {node.children.length > 1 && (
                                     <div className="flex w-full h-0.5">
                                         {/* Left half of horizontal bar */}
-                                        <div className={`flex-1 h-full ${index === 0 ? "bg-transparent" : "bg-primary-200"
+                                        <div className={`flex-1 h-full ${index === 0 ? "bg-transparent" : theme.line.color
                                             }`} />
                                         {/* Right half of horizontal bar */}
-                                        <div className={`flex-1 h-full ${index === node.children.length - 1 ? "bg-transparent" : "bg-primary-200"
+                                        <div className={`flex-1 h-full ${index === node.children.length - 1 ? "bg-transparent" : theme.line.color
                                             }`} />
                                     </div>
                                 )}
 
                                 {/* Vertical stub from horizontal bar down to child node */}
-                                <div className="w-0.5 h-6 bg-primary-200" />
+                                <div className={`w-0.5 h-6 ${theme.line.color}`} />
 
                                 {/* Child node with padding for gap */}
                                 <div className="px-2 sm:px-3">
@@ -893,6 +904,7 @@ function TreeNode({
                                         onShowQuickMenu={onShowQuickMenu}
                                         canEdit={canEdit}
                                         orientation={orientation}
+                                        theme={theme}
                                     />
                                 </div>
                             </div>
@@ -986,7 +998,7 @@ function MemberListTab({ members, baniId, onSelectMember }: { members: MemberDat
                                         </div>
                                         {member.nickname && <p className="text-xs text-surface-400 truncate">{member.nickname}</p>}
                                         {member.city && (
-                                            <p className="text-[11px] text-surface-400 mt-0.5">📍 {member.city}</p>
+                                            <p className="text-[11px] text-surface-400 mt-0.5 flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" /> {member.city}</p>
                                         )}
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-surface-300 group-hover:text-primary-500 transition-colors flex-shrink-0" />
@@ -1009,7 +1021,7 @@ function MemberListTab({ members, baniId, onSelectMember }: { members: MemberDat
 // ============================================
 // Member Detail Popup
 // ============================================
-function MemberDetailPopup({ member, baniId, onClose, onEdit }: { member: MemberData; baniId: string; onClose: () => void; onEdit: (memberId: string) => void }) {
+function MemberDetailPopup({ member, baniId, onClose, onEdit, onDelete }: { member: MemberData; baniId: string; onClose: () => void; onEdit: (memberId: string) => void; onDelete?: (memberId: string) => void }) {
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return null;
         try {
@@ -1051,13 +1063,13 @@ function MemberDetailPopup({ member, baniId, onClose, onEdit }: { member: Member
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-lg font-bold text-surface-900">{member.fullName}</h3>
                                 {!member.isAlive && (
-                                    <span className="px-1.5 py-0.5 rounded-lg bg-surface-200/80 text-surface-500 text-[10px] font-medium">🕊️ Almarhum/ah</span>
+                                    <span className="px-1.5 py-0.5 rounded-lg bg-surface-200/80 text-surface-500 text-[10px] font-medium flex items-center gap-0.5"><Flower2 className="w-2.5 h-2.5" /> Almarhum/ah</span>
                                 )}
                             </div>
                             {member.nickname && <p className="text-sm text-surface-500">&quot;{member.nickname}&quot;</p>}
                             <div className="flex flex-wrap gap-1.5 mt-1.5">
                                 <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${member.gender === "MALE" ? "bg-blue-200/60 text-blue-700" : "bg-pink-200/60 text-pink-700"}`}>
-                                    {member.gender === "MALE" ? "👨 Laki-laki" : "👩 Perempuan"}
+                                    {member.gender === "MALE" ? "Laki-laki" : "Perempuan"}
                                 </span>
                                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary-100/60 text-primary-700 font-medium">Generasi {member.generation + 1}</span>
                             </div>
@@ -1142,7 +1154,7 @@ function MemberDetailPopup({ member, baniId, onClose, onEdit }: { member: Member
                                 <MapPin className="w-3.5 h-3.5" /> Alamat
                             </h4>
                             {member.address && <p className="text-sm text-surface-900">{member.address}</p>}
-                            {member.city && <p className="text-sm text-surface-600">📍 {member.city}</p>}
+                            {member.city && <p className="text-sm text-surface-600 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {member.city}</p>}
                         </div>
                     )}
 
@@ -1178,8 +1190,21 @@ function MemberDetailPopup({ member, baniId, onClose, onEdit }: { member: Member
                     )}
                 </div>
 
-                {/* Footer - Edit Button */}
+                {/* Footer - Edit & Delete Buttons */}
                 <div className="px-5 pb-4 pt-2 flex gap-2 flex-shrink-0 border-t border-surface-100">
+                    {onDelete && (
+                        <button
+                            onClick={() => {
+                                if (confirm(`Hapus anggota "${member.fullName}"? Tindakan ini tidak dapat dibatalkan.`)) {
+                                    onDelete(member.id);
+                                }
+                            }}
+                            className="px-3 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
+                            title="Hapus"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                     {member.phoneWhatsapp && (
                         <a
                             href={getWhatsAppLink(member.phoneWhatsapp)}
@@ -1214,7 +1239,7 @@ function AddMemberModal({
     onSuccess,
 }: {
     baniId: string;
-    existingMembers: MemberData[];
+    existingMembers: TreeMember[];
     onClose: () => void;
     onSuccess: () => void;
 }) {
@@ -1338,12 +1363,12 @@ function AddMemberModal({
                                 <label className={labelClass}>Jenis Kelamin <span className="text-red-500">*</span></label>
                                 <div className="flex gap-2">
                                     <button type="button" onClick={() => setGender("MALE")}
-                                        className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "MALE" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-surface-200 text-surface-500"}`}>
-                                        👨 Laki-laki
+                                        className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "MALE" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-surface-200 text-surface-500"}`}>
+                                        <User className="w-3.5 h-3.5" /> Laki-laki
                                     </button>
                                     <button type="button" onClick={() => setGender("FEMALE")}
-                                        className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "FEMALE" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-surface-200 text-surface-500"}`}>
-                                        👩 Perempuan
+                                        className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "FEMALE" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-surface-200 text-surface-500"}`}>
+                                        <User className="w-3.5 h-3.5" /> Perempuan
                                     </button>
                                 </div>
                             </div>
@@ -1363,12 +1388,12 @@ function AddMemberModal({
                                 <label className={labelClass}>Status</label>
                                 <div className="flex gap-2">
                                     <button type="button" onClick={() => { setIsAlive(true); setDeathDate(""); }}
-                                        className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
-                                        ❤️ Masih Hidup
+                                        className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
+                                        <Heart className="w-3.5 h-3.5" /> Masih Hidup
                                     </button>
                                     <button type="button" onClick={() => setIsAlive(false)}
-                                        className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
-                                        🕊️ Sudah Wafat
+                                        className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
+                                        <Flower2 className="w-3.5 h-3.5" /> Sudah Wafat
                                     </button>
                                 </div>
                             </div>
@@ -1483,7 +1508,7 @@ function EditMemberPopup({
 }: {
     memberId: string;
     baniId: string;
-    allMembers: MemberData[];
+    allMembers: TreeMember[];
     onClose: () => void;
     onSuccess: () => void;
 }) {
@@ -1670,12 +1695,12 @@ function EditMemberPopup({
                                         <label className={labelClass}>Jenis Kelamin</label>
                                         <div className="flex gap-2">
                                             <button type="button" onClick={() => setGender("MALE")}
-                                                className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "MALE" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-surface-200 text-surface-500"}`}>
-                                                👨 Laki-laki
+                                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "MALE" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-surface-200 text-surface-500"}`}>
+                                                <User className="w-3.5 h-3.5" /> Laki-laki
                                             </button>
                                             <button type="button" onClick={() => setGender("FEMALE")}
-                                                className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "FEMALE" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-surface-200 text-surface-500"}`}>
-                                                👩 Perempuan
+                                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${gender === "FEMALE" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-surface-200 text-surface-500"}`}>
+                                                <User className="w-3.5 h-3.5" /> Perempuan
                                             </button>
                                         </div>
                                     </div>
@@ -1695,12 +1720,12 @@ function EditMemberPopup({
                                         <label className={labelClass}>Status</label>
                                         <div className="flex gap-2">
                                             <button type="button" onClick={() => { setIsAlive(true); setDeathDate(""); }}
-                                                className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
-                                                ❤️ Masih Hidup
+                                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
+                                                <Heart className="w-3.5 h-3.5" /> Masih Hidup
                                             </button>
                                             <button type="button" onClick={() => setIsAlive(false)}
-                                                className={`flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
-                                                🕊️ Sudah Wafat
+                                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-xs font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
+                                                <Flower2 className="w-3.5 h-3.5" /> Sudah Wafat
                                             </button>
                                         </div>
                                     </div>
@@ -1827,6 +1852,8 @@ export default function BaniContent({
     initialShowBirth = false,
     initialShowAddress = false,
     initialShowSocmed = false,
+    isFreeUser = false,
+    initialCardTheme = "STANDARD",
 }: {
     baniId: string;
     baniName: string;
@@ -1838,12 +1865,30 @@ export default function BaniContent({
     initialShowBirth?: boolean;
     initialShowAddress?: boolean;
     initialShowSocmed?: boolean;
+    isFreeUser?: boolean;
+    initialCardTheme?: string;
 }) {
     const [activeTab, setActiveTab] = useState<"tree" | "list">("tree");
 
     // Tree state
     const [treeMembers, setTreeMembers] = useState<TreeMember[]>([]);
     const [loadingTree, setLoadingTree] = useState(true);
+
+    // Compute export stats from treeMembers
+    const exportStats = useMemo(() => {
+        if (treeMembers.length === 0) return undefined;
+        const totalMale = treeMembers.filter(m => m.gender === 'MALE').length;
+        const totalFemale = treeMembers.filter(m => m.gender === 'FEMALE').length;
+        const totalAlive = treeMembers.filter(m => m.isAlive).length;
+        const maxGen = Math.max(...treeMembers.map(m => m.generation), 0);
+        return {
+            totalMembers: treeMembers.length,
+            totalAlive,
+            totalMale,
+            totalFemale,
+            totalGenerations: maxGen + 1,
+        };
+    }, [treeMembers]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [scale, setScale] = useState(1);
@@ -1868,6 +1913,22 @@ export default function BaniContent({
     const [showBirthPublic, setShowBirthPublic] = useState(initialShowBirth);
     const [showAddressPublic, setShowAddressPublic] = useState(initialShowAddress);
     const [showSocmedPublic, setShowSocmedPublic] = useState(initialShowSocmed);
+    const [cardTheme, setCardTheme] = useState<ThemeKey>((initialCardTheme || "STANDARD") as ThemeKey);
+    const [settingsSaved, setSettingsSaved] = useState(false);
+    const [activeSettingsTab, setActiveSettingsTab] = useState<"orientation" | "theme" | "visibility">("orientation");
+    const [confirmDeleteName, setConfirmDeleteName] = useState("");
+    const [deletingBani, setDeletingBani] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    // Auto-open settings from dashboard ?settings=true
+    const searchParams = useSearchParams();
+    useEffect(() => {
+        if (searchParams.get("settings") === "true") {
+            setShowSettings(true);
+        }
+    }, [searchParams]);
+    const currentTheme = TREE_THEMES[cardTheme] || TREE_THEMES.STANDARD;
 
     // Fetch tree members (with marriage data)
     const fetchTreeMembers = useCallback(async () => {
@@ -2002,7 +2063,7 @@ export default function BaniContent({
     }, [fetchTreeMembers]);
 
     // Settings handlers
-    const saveSettings = useCallback(async (newOrientation: string, newIsPublic: boolean, extras?: { showWaPublic?: boolean; showBirthPublic?: boolean; showAddressPublic?: boolean; showSocmedPublic?: boolean }) => {
+    const saveSettings = useCallback(async (newOrientation: string, newIsPublic: boolean, extras?: { showWaPublic?: boolean; showBirthPublic?: boolean; showAddressPublic?: boolean; showSocmedPublic?: boolean; cardTheme?: string }) => {
         setSavingSettings(true);
         try {
             await fetch(`/api/banis/${baniId}/settings`, {
@@ -2016,14 +2077,36 @@ export default function BaniContent({
             if (extras?.showBirthPublic !== undefined) setShowBirthPublic(extras.showBirthPublic);
             if (extras?.showAddressPublic !== undefined) setShowAddressPublic(extras.showAddressPublic);
             if (extras?.showSocmedPublic !== undefined) setShowSocmedPublic(extras.showSocmedPublic);
+            if (extras?.cardTheme !== undefined) setCardTheme(extras.cardTheme as ThemeKey);
         } catch (err) {
             console.error("Save settings error:", err);
         } finally {
             setSavingSettings(false);
+            setSettingsSaved(true);
+            setTimeout(() => setSettingsSaved(false), 2000);
         }
     }, [baniId]);
 
     const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/tree/${baniId}` : '';
+
+    const handleDeleteBani = useCallback(async () => {
+        if (confirmDeleteName !== baniName) return;
+        setDeletingBani(true);
+        setDeleteError("");
+        try {
+            const res = await fetch(`/api/banis/${baniId}`, { method: "DELETE" });
+            if (!res.ok) {
+                const data = await res.json();
+                setDeleteError(data.error || "Gagal menghapus");
+                return;
+            }
+            window.location.href = "/dashboard";
+        } catch {
+            setDeleteError("Terjadi kesalahan");
+        } finally {
+            setDeletingBani(false);
+        }
+    }, [baniId, baniName, confirmDeleteName]);
 
     const copyPublicLink = useCallback(async () => {
         try {
@@ -2132,7 +2215,7 @@ export default function BaniContent({
                                     )}
                                 </button>
                             </div>
-                            <ExportTree treeContainerRef={treeRef} baniName={baniName || "Pohon-Nasab"} />
+                            <ExportTree treeContainerRef={treeRef} baniName={baniName || "Pohon-Nasab"} stats={exportStats} isFreeUser={isFreeUser} cardTheme={cardTheme} />
                         </div>
                     )}
 
@@ -2174,7 +2257,7 @@ export default function BaniContent({
                         <>
                             {/* Export - mobile only */}
                             <div className="sm:hidden">
-                                <ExportTree treeContainerRef={treeRef} baniName={baniName || "Pohon-Nasab"} />
+                                <ExportTree treeContainerRef={treeRef} baniName={baniName || "Pohon-Nasab"} stats={exportStats} isFreeUser={isFreeUser} cardTheme={cardTheme} />
                             </div>
 
                             {/* Tree View */}
@@ -2238,6 +2321,7 @@ export default function BaniContent({
                                                 onShowQuickMenu={handleShowQuickMenu}
                                                 canEdit={canEdit}
                                                 orientation={treeOrientation}
+                                                theme={currentTheme}
                                             />
                                         ) : (
                                             <div className="text-center py-20">
@@ -2260,58 +2344,145 @@ export default function BaniContent({
                                 if (m.city) infoParts.push(m.city);
                                 if (m.deathDate) infoParts.push('Wafat ' + formatDate(m.deathDate));
 
+                                // Get spouses
+                                const spouseEntries: { marriageId: string; spouseId: string; name: string }[] = [];
+                                if (m.gender === 'MALE' && m.marriagesAsHusband) {
+                                    m.marriagesAsHusband.forEach((mar) => spouseEntries.push({ marriageId: mar.id, spouseId: mar.wife.id, name: mar.wife.fullName }));
+                                } else if (m.gender === 'FEMALE' && m.marriagesAsWife) {
+                                    m.marriagesAsWife.forEach((mar) => spouseEntries.push({ marriageId: mar.id, spouseId: mar.husband.id, name: mar.husband.fullName }));
+                                }
+
                                 return (
-                                    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-surface-200 bg-white shadow-sm animate-scale-in">
-                                        {/* Avatar */}
-                                        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${m.gender === 'MALE' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
-                                            {m.photo ? (
-                                                <img src={m.photo} alt={m.fullName} className="w-9 h-9 rounded-full object-cover" />
-                                            ) : (
-                                                <User className="w-4 h-4" />
-                                            )}
-                                        </div>
-                                        {/* Name & info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                <span className="font-semibold text-sm text-surface-900 truncate">{m.fullName}</span>
-                                                {m.nickname && <span className="text-xs text-surface-400 truncate">&ldquo;{m.nickname}&rdquo;</span>}
-                                                {!m.isAlive && <span className="text-[10px] bg-surface-100 text-surface-400 px-1 py-0.5 rounded">Alm{m.gender === 'FEMALE' ? 'h' : ''}.</span>}
-                                                <span className="text-[10px] text-surface-400 bg-surface-50 px-1.5 py-0.5 rounded">Gen {m.generation}</span>
+                                    <div className="space-y-2 animate-scale-in">
+                                        {/* Main member bar */}
+                                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-surface-200 bg-white shadow-sm">
+                                            {/* Avatar */}
+                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${m.gender === 'MALE' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
+                                                {m.photo ? (
+                                                    <img src={m.photo} alt={m.fullName} className="w-9 h-9 rounded-full object-cover" />
+                                                ) : (
+                                                    <User className="w-4 h-4" />
+                                                )}
                                             </div>
-                                            {infoParts.length > 0 && (
-                                                <p className="text-[11px] text-surface-400 truncate mt-0.5">{infoParts.join(' · ')}</p>
-                                            )}
-                                        </div>
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                            {m.phoneWhatsapp && (
-                                                <a href={getWhatsAppLink(m.phoneWhatsapp)} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-lg bg-green-500 text-white flex items-center justify-center hover:bg-green-400 transition-colors" title="WhatsApp">
-                                                    <Phone className="w-3 h-3" />
-                                                </a>
-                                            )}
-                                            {/* Social Media Icons */}
-                                            {(() => {
-                                                const sm = m.socialMedia as Record<string, string> | null;
-                                                if (!sm) return null;
-                                                return Object.entries(sm).filter(([, v]) => v).map(([key]) => {
-                                                    const platform = SOCIAL_MEDIA_PLATFORMS.find(p => p.key === key);
-                                                    if (!platform) return null;
-                                                    return (
-                                                        <a key={key} href={getSocialMediaUrl(key, sm[key])} target="_blank" rel="noopener noreferrer" className={`w-7 h-7 rounded-lg ${platform.bg} ${platform.color} flex items-center justify-center hover:opacity-80 transition-opacity`} title={`${platform.label}: ${sm[key]}`}>
-                                                            <SocialMediaIcon platform={key} className="w-3 h-3" />
-                                                        </a>
-                                                    );
-                                                });
-                                            })()}
-                                            {canEdit && (
-                                                <button onClick={() => setEditPopupMemberId(m.id)} className="w-7 h-7 rounded-lg border border-surface-200 text-surface-500 flex items-center justify-center hover:bg-surface-50 transition-colors" title="Edit">
-                                                    <Edit className="w-3 h-3" />
+                                            {/* Name & info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <span className="font-semibold text-sm text-surface-900 truncate">{m.fullName}</span>
+                                                    {m.nickname && <span className="text-xs text-surface-400 truncate">&ldquo;{m.nickname}&rdquo;</span>}
+                                                    {!m.isAlive && <span className="text-[10px] bg-surface-100 text-surface-400 px-1 py-0.5 rounded">Alm{m.gender === 'FEMALE' ? 'h' : ''}.</span>}
+                                                    <span className="text-[10px] text-surface-400 bg-surface-50 px-1.5 py-0.5 rounded">Gen {m.generation}</span>
+                                                </div>
+                                                {infoParts.length > 0 && (
+                                                    <p className="text-[11px] text-surface-400 truncate mt-0.5">{infoParts.join(' · ')}</p>
+                                                )}
+                                            </div>
+                                            {/* Actions */}
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                {m.phoneWhatsapp && (
+                                                    <a href={getWhatsAppLink(m.phoneWhatsapp)} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-lg bg-green-500 text-white flex items-center justify-center hover:bg-green-400 transition-colors" title="WhatsApp">
+                                                        <Phone className="w-3 h-3" />
+                                                    </a>
+                                                )}
+                                                {/* Social Media Icons */}
+                                                {(() => {
+                                                    const sm = m.socialMedia as Record<string, string> | null;
+                                                    if (!sm) return null;
+                                                    return Object.entries(sm).filter(([, v]) => v).map(([key]) => {
+                                                        const platform = SOCIAL_MEDIA_PLATFORMS.find(p => p.key === key);
+                                                        if (!platform) return null;
+                                                        return (
+                                                            <a key={key} href={getSocialMediaUrl(key, sm[key])} target="_blank" rel="noopener noreferrer" className={`w-7 h-7 rounded-lg ${platform.bg} ${platform.color} flex items-center justify-center hover:opacity-80 transition-opacity`} title={`${platform.label}: ${sm[key]}`}>
+                                                                <SocialMediaIcon platform={key} className="w-3 h-3" />
+                                                            </a>
+                                                        );
+                                                    });
+                                                })()}
+                                                {canEdit && (
+                                                    <>
+                                                        <button onClick={() => setEditPopupMemberId(m.id)} className="w-7 h-7 rounded-lg border border-surface-200 text-surface-500 flex items-center justify-center hover:bg-surface-50 transition-colors" title="Edit">
+                                                            <Edit className="w-3 h-3" />
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (!confirm(`Hapus anggota "${m.fullName}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+                                                                try {
+                                                                    const res = await fetch(`/api/members/${m.id}`, { method: 'DELETE' });
+                                                                    if (!res.ok) {
+                                                                        const data = await res.json();
+                                                                        alert(data.error || 'Gagal menghapus');
+                                                                        return;
+                                                                    }
+                                                                    setSelectedId(null);
+                                                                    fetchTreeMembers();
+                                                                    window.location.reload();
+                                                                } catch {
+                                                                    alert('Gagal menghapus anggota');
+                                                                }
+                                                            }}
+                                                            className="w-7 h-7 rounded-lg border border-red-200 text-red-500 flex items-center justify-center hover:bg-red-50 transition-colors"
+                                                            title="Hapus"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button onClick={() => setSelectedId(null)} className="w-7 h-7 rounded-lg border border-surface-200 text-surface-400 flex items-center justify-center hover:bg-surface-50 transition-colors" title="Tutup">
+                                                    <X className="w-3 h-3" />
                                                 </button>
-                                            )}
-                                            <button onClick={() => setSelectedId(null)} className="w-7 h-7 rounded-lg border border-surface-200 text-surface-400 flex items-center justify-center hover:bg-surface-50 transition-colors" title="Tutup">
-                                                <X className="w-3 h-3" />
-                                            </button>
+                                            </div>
                                         </div>
+
+                                        {/* Spouse section */}
+                                        {spouseEntries.length > 0 && (
+                                            <div className="px-3 py-2 rounded-xl border border-surface-200 bg-white shadow-sm">
+                                                <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider mb-1.5">Pasangan</p>
+                                                <div className="space-y-1.5">
+                                                    {spouseEntries.map((entry) => (
+                                                        <div key={entry.marriageId} className="flex items-center gap-2">
+                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${m.gender === 'MALE' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                                <User className="w-3 h-3" />
+                                                            </div>
+                                                            <span className="text-sm text-surface-900 font-medium flex-1 truncate">{entry.name}</span>
+                                                            {canEdit && (
+                                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                                    <button
+                                                                        onClick={() => setEditPopupMemberId(entry.spouseId)}
+                                                                        className="w-6 h-6 rounded-md border border-surface-200 text-surface-500 flex items-center justify-center hover:bg-surface-50 transition-colors"
+                                                                        title="Edit pasangan"
+                                                                    >
+                                                                        <Edit className="w-2.5 h-2.5" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const action = confirm(
+                                                                                `Pilih OK untuk menghapus anggota "${entry.name}" beserta data pernikahan.\n\nPilih Cancel lalu gunakan tombol hapus di popup edit jika hanya ingin memutus hubungan pernikahan.`
+                                                                            );
+                                                                            if (!action) return;
+                                                                            try {
+                                                                                const res = await fetch(`/api/members/${entry.spouseId}`, { method: 'DELETE' });
+                                                                                if (!res.ok) {
+                                                                                    const data = await res.json();
+                                                                                    alert(data.error || 'Gagal menghapus');
+                                                                                    return;
+                                                                                }
+                                                                                fetchTreeMembers();
+                                                                                window.location.reload();
+                                                                            } catch {
+                                                                                alert('Gagal menghapus pasangan');
+                                                                            }
+                                                                        }}
+                                                                        className="w-6 h-6 rounded-md border border-red-200 text-red-500 flex items-center justify-center hover:bg-red-50 transition-colors"
+                                                                        title="Hapus pasangan"
+                                                                    >
+                                                                        <Trash2 className="w-2.5 h-2.5" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })()}
@@ -2350,6 +2521,21 @@ export default function BaniContent({
                     baniId={baniId}
                     onClose={() => setDetailPopupMember(null)}
                     onEdit={(id) => setEditPopupMemberId(id)}
+                    onDelete={canEdit ? async (id) => {
+                        try {
+                            const res = await fetch(`/api/members/${id}`, { method: 'DELETE' });
+                            if (!res.ok) {
+                                const data = await res.json();
+                                alert(data.error || 'Gagal menghapus');
+                                return;
+                            }
+                            setDetailPopupMember(null);
+                            fetchTreeMembers();
+                            window.location.reload();
+                        } catch {
+                            alert('Gagal menghapus anggota');
+                        }
+                    } : undefined}
                 />
             )}
 
@@ -2358,7 +2544,7 @@ export default function BaniContent({
                 <EditMemberPopup
                     memberId={editPopupMemberId}
                     baniId={baniId}
-                    allMembers={members}
+                    allMembers={treeMembers}
                     onClose={() => setEditPopupMemberId(null)}
                     onSuccess={() => {
                         setEditPopupMemberId(null);
@@ -2372,174 +2558,274 @@ export default function BaniContent({
             {showAddMemberModal && (
                 <AddMemberModal
                     baniId={baniId}
-                    existingMembers={members}
+                    existingMembers={treeMembers}
                     onClose={() => setShowAddMemberModal(false)}
                     onSuccess={handleAddMemberSuccess}
                 />
             )}
 
+
             {/* Settings Popup */}
             {showSettings && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in">
-                        <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-surface-900 flex items-center gap-2">
-                                <Settings className="w-5 h-5 text-primary-600" /> Pengaturan Tree
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-scale-in max-h-[85vh] flex flex-col">
+                        <div className="px-5 py-3.5 border-b border-surface-100 flex items-center justify-between flex-shrink-0">
+                            <h2 className="text-base font-bold text-surface-900 flex items-center gap-2">
+                                <Settings className="w-4.5 h-4.5 text-primary-600" /> Pengaturan
                             </h2>
                             <button onClick={() => setShowSettings(false)} className="p-1.5 rounded-lg hover:bg-surface-100 transition-colors">
-                                <X className="w-5 h-5 text-surface-400" />
+                                <X className="w-4.5 h-4.5 text-surface-400" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-5">
-                            {/* Tree Orientation */}
-                            <div>
-                                <label className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3 block flex items-center gap-1.5">
-                                    <ArrowDownUp className="w-3.5 h-3.5" /> Orientasi Pohon
-                                </label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => saveSettings("VERTICAL", isPublic)}
-                                        disabled={savingSettings}
-                                        className={`p-4 rounded-xl border-2 transition-all text-center ${treeOrientation === "VERTICAL"
-                                            ? "border-primary-500 bg-primary-50"
-                                            : "border-surface-200 hover:border-surface-300"
-                                            }`}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
-                                                <circle cx="16" cy="4" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-500" : "fill-surface-300"} />
-                                                <line x1="16" y1="7" x2="16" y2="16" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="8" y1="16" x2="24" y2="16" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="8" y1="16" x2="8" y2="22" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="24" y1="16" x2="24" y2="22" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <circle cx="8" cy="25" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-400" : "fill-surface-300"} />
-                                                <circle cx="24" cy="25" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-400" : "fill-surface-300"} />
-                                            </svg>
-                                            <span className={`text-xs font-medium ${treeOrientation === "VERTICAL" ? "text-primary-700" : "text-surface-500"}`}>Vertikal</span>
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => saveSettings("HORIZONTAL", isPublic)}
-                                        disabled={savingSettings}
-                                        className={`p-4 rounded-xl border-2 transition-all text-center ${treeOrientation === "HORIZONTAL"
-                                            ? "border-primary-500 bg-primary-50"
-                                            : "border-surface-200 hover:border-surface-300"
-                                            }`}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
-                                                <circle cx="4" cy="16" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-500" : "fill-surface-300"} />
-                                                <line x1="7" y1="16" x2="16" y2="16" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="16" y1="8" x2="16" y2="24" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="16" y1="8" x2="22" y2="8" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <line x1="16" y1="24" x2="22" y2="24" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
-                                                <circle cx="25" cy="8" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-400" : "fill-surface-300"} />
-                                                <circle cx="25" cy="24" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-400" : "fill-surface-300"} />
-                                            </svg>
-                                            <span className={`text-xs font-medium ${treeOrientation === "HORIZONTAL" ? "text-primary-700" : "text-surface-500"}`}>Horizontal</span>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
+                        {/* Tab Navigation */}
+                        <div className="px-3 pt-3 flex gap-1 flex-shrink-0 bg-surface-50 mx-3 mt-3 rounded-xl p-1">
+                            {([
+                                { key: "orientation" as const, label: "Orientasi", icon: <ArrowDownUp className="w-3.5 h-3.5" /> },
+                                { key: "theme" as const, label: "Tema", icon: <Palette className="w-3.5 h-3.5" /> },
+                                { key: "visibility" as const, label: "Visibilitas", icon: isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" /> },
+                            ]).map(tab => (
+                                <button
+                                    key={tab.key}
+                                    onClick={() => setActiveSettingsTab(tab.key)}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all ${activeSettingsTab === tab.key
+                                        ? "bg-white text-primary-700 shadow-sm border border-surface-200"
+                                        : "text-surface-500 hover:text-surface-700"
+                                        }`}
+                                >
+                                    {tab.icon}
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
 
-                            {/* Visibility */}
-                            <div>
-                                <label className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3 block flex items-center gap-1.5">
-                                    {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />} Visibilitas
-                                </label>
-                                <div className="space-y-2">
-                                    <button
-                                        onClick={() => saveSettings(treeOrientation, false)}
-                                        disabled={savingSettings}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${!isPublic
-                                            ? "border-primary-500 bg-primary-50"
-                                            : "border-surface-200 hover:border-surface-300"
-                                            }`}
-                                    >
-                                        <Lock className={`w-5 h-5 ${!isPublic ? "text-primary-600" : "text-surface-300"}`} />
-                                        <div>
-                                            <p className={`text-sm font-medium ${!isPublic ? "text-primary-700" : "text-surface-600"}`}>Privat</p>
-                                            <p className="text-[11px] text-surface-400">Hanya anggota yang bisa melihat</p>
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => saveSettings(treeOrientation, true)}
-                                        disabled={savingSettings}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${isPublic
-                                            ? "border-green-500 bg-green-50"
-                                            : "border-surface-200 hover:border-surface-300"
-                                            }`}
-                                    >
-                                        <Globe className={`w-5 h-5 ${isPublic ? "text-green-600" : "text-surface-300"}`} />
-                                        <div>
-                                            <p className={`text-sm font-medium ${isPublic ? "text-green-700" : "text-surface-600"}`}>Publik</p>
-                                            <p className="text-[11px] text-surface-400">Siapapun dengan link bisa melihat pohon</p>
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {/* Public link */}
-                                {isPublic && (
-                                    <div className="mt-3 p-3 rounded-lg bg-green-50 border border-green-200">
-                                        <p className="text-[11px] text-green-700 font-medium mb-2">Link Publik:</p>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                readOnly
-                                                value={publicUrl}
-                                                className="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-green-200 text-xs text-surface-700 truncate"
-                                            />
-                                            <button
-                                                onClick={copyPublicLink}
-                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-500 transition-colors flex-shrink-0"
-                                            >
-                                                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                                                {copied ? "Tersalin!" : "Salin"}
-                                            </button>
-                                        </div>
+                        <div className="overflow-y-auto flex-1 px-5 py-4 min-h-[180px]">
+                            {/* === Tab: Orientasi === */}
+                            {activeSettingsTab === "orientation" && (
+                                <div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => saveSettings("VERTICAL", isPublic)}
+                                            disabled={savingSettings}
+                                            className={`p-2.5 rounded-xl border-2 transition-all text-center ${treeOrientation === "VERTICAL"
+                                                ? "border-primary-500 bg-primary-50"
+                                                : "border-surface-200 hover:border-surface-300"
+                                                }`}
+                                        >
+                                            <div className="flex flex-col items-center gap-1.5">
+                                                <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none">
+                                                    <circle cx="16" cy="4" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-500" : "fill-surface-300"} />
+                                                    <line x1="16" y1="7" x2="16" y2="16" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
+                                                    <line x1="8" y1="16" x2="24" y2="16" className={treeOrientation === "VERTICAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
+                                                    <circle cx="8" cy="25" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-400" : "fill-surface-300"} />
+                                                    <circle cx="24" cy="25" r="3" className={treeOrientation === "VERTICAL" ? "fill-primary-400" : "fill-surface-300"} />
+                                                </svg>
+                                                <span className={`text-[11px] font-medium ${treeOrientation === "VERTICAL" ? "text-primary-700" : "text-surface-500"}`}>Vertikal</span>
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => saveSettings("HORIZONTAL", isPublic)}
+                                            disabled={savingSettings}
+                                            className={`p-2.5 rounded-xl border-2 transition-all text-center ${treeOrientation === "HORIZONTAL"
+                                                ? "border-primary-500 bg-primary-50"
+                                                : "border-surface-200 hover:border-surface-300"
+                                                }`}
+                                        >
+                                            <div className="flex flex-col items-center gap-1.5">
+                                                <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none">
+                                                    <circle cx="4" cy="16" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-500" : "fill-surface-300"} />
+                                                    <line x1="7" y1="16" x2="16" y2="16" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
+                                                    <line x1="16" y1="8" x2="16" y2="24" className={treeOrientation === "HORIZONTAL" ? "stroke-primary-400" : "stroke-surface-300"} strokeWidth="2" />
+                                                    <circle cx="25" cy="8" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-400" : "fill-surface-300"} />
+                                                    <circle cx="25" cy="24" r="3" className={treeOrientation === "HORIZONTAL" ? "fill-primary-400" : "fill-surface-300"} />
+                                                </svg>
+                                                <span className={`text-[11px] font-medium ${treeOrientation === "HORIZONTAL" ? "text-primary-700" : "text-surface-500"}`}>Horizontal</span>
+                                            </div>
+                                        </button>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {/* Public data visibility toggles */}
-                                {isPublic && (
-                                    <div className="mt-4 pt-4 border-t border-surface-200">
-                                        <label className="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-3 block">Data Ditampilkan di Publik</label>
-                                        <div className="space-y-2">
+                            {/* === Tab: Tema Card === */}
+                            {activeSettingsTab === "theme" && (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {THEME_KEYS.map((key) => {
+                                        const t = TREE_THEMES[key];
+                                        const isActive = cardTheme === key;
+                                        return (
+                                            <button
+                                                key={key}
+                                                onClick={() => saveSettings(treeOrientation, isPublic, { cardTheme: key })}
+                                                disabled={savingSettings}
+                                                className={`p-2 rounded-xl border-2 transition-all text-center ${isActive
+                                                    ? "border-primary-500 bg-primary-50"
+                                                    : "border-surface-200 hover:border-surface-300"
+                                                    }`}
+                                            >
+                                                <div className="flex justify-center gap-0.5 mb-1">
+                                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.preview.accent }} />
+                                                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: t.preview.bg, border: `1px solid ${t.preview.accent}` }} />
+                                                </div>
+                                                <p className={`text-[10px] font-medium truncate ${isActive ? "text-primary-700" : "text-surface-600"}`}>{t.name}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* === Tab: Visibilitas === */}
+                            {activeSettingsTab === "visibility" && (
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => saveSettings(treeOrientation, false)}
+                                            disabled={savingSettings}
+                                            className={`flex items-center gap-2 p-2.5 rounded-xl border-2 transition-all ${!isPublic
+                                                ? "border-primary-500 bg-primary-50"
+                                                : "border-surface-200 hover:border-surface-300"
+                                                }`}
+                                        >
+                                            <Lock className={`w-4 h-4 ${!isPublic ? "text-primary-600" : "text-surface-300"}`} />
+                                            <span className={`text-xs font-medium ${!isPublic ? "text-primary-700" : "text-surface-500"}`}>Privat</span>
+                                        </button>
+                                        <button
+                                            onClick={() => saveSettings(treeOrientation, true)}
+                                            disabled={savingSettings}
+                                            className={`flex items-center gap-2 p-2.5 rounded-xl border-2 transition-all ${isPublic
+                                                ? "border-green-500 bg-green-50"
+                                                : "border-surface-200 hover:border-surface-300"
+                                                }`}
+                                        >
+                                            <Globe className={`w-4 h-4 ${isPublic ? "text-green-600" : "text-surface-300"}`} />
+                                            <span className={`text-xs font-medium ${isPublic ? "text-green-700" : "text-surface-500"}`}>Publik</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Public link */}
+                                    {isPublic && (
+                                        <div className="p-2.5 rounded-lg bg-green-50 border border-green-200">
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    value={publicUrl}
+                                                    className="flex-1 px-2 py-1 rounded-lg bg-white border border-green-200 text-[11px] text-surface-700 truncate"
+                                                />
+                                                <button
+                                                    onClick={copyPublicLink}
+                                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-600 text-white text-[11px] font-medium hover:bg-green-500 transition-colors flex-shrink-0"
+                                                >
+                                                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                                    {copied ? "OK!" : "Salin"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Public data toggles */}
+                                    {isPublic && (
+                                        <div className="space-y-1.5 pt-1">
+                                            <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Data Publik</p>
                                             {[
-                                                { key: 'showWaPublic', label: 'Nomor WhatsApp', value: showWaPublic, iconComponent: <Smartphone className="w-4 h-4 text-green-500" />, iconBg: 'bg-green-50' },
-                                                { key: 'showBirthPublic', label: 'Tanggal Lahir', value: showBirthPublic, iconComponent: <CalendarDays className="w-4 h-4 text-blue-500" />, iconBg: 'bg-blue-50' },
-                                                { key: 'showAddressPublic', label: 'Alamat', value: showAddressPublic, iconComponent: <MapPin className="w-4 h-4 text-red-500" />, iconBg: 'bg-red-50' },
-                                                { key: 'showSocmedPublic', label: 'Sosial Media', value: showSocmedPublic, iconComponent: <Globe className="w-4 h-4 text-purple-500" />, iconBg: 'bg-purple-50' },
+                                                { key: 'showWaPublic', label: 'WhatsApp', value: showWaPublic, icon: <Smartphone className="w-3.5 h-3.5 text-green-500" /> },
+                                                { key: 'showBirthPublic', label: 'Tanggal Lahir', value: showBirthPublic, icon: <CalendarDays className="w-3.5 h-3.5 text-blue-500" /> },
+                                                { key: 'showAddressPublic', label: 'Alamat', value: showAddressPublic, icon: <MapPin className="w-3.5 h-3.5 text-red-500" /> },
+                                                { key: 'showSocmedPublic', label: 'Sosial Media', value: showSocmedPublic, icon: <Globe className="w-3.5 h-3.5 text-purple-500" /> },
                                             ].map(item => (
                                                 <button
                                                     key={item.key}
                                                     onClick={() => saveSettings(treeOrientation, true, { [item.key]: !item.value })}
                                                     disabled={savingSettings}
-                                                    className="w-full flex items-center justify-between p-2.5 rounded-lg border border-surface-200 hover:bg-surface-50 transition-all"
+                                                    className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-surface-50 transition-all"
                                                 >
-                                                    <span className="flex items-center gap-2.5 text-sm text-surface-700">
-                                                        <span className={`w-7 h-7 rounded-lg ${item.iconBg} flex items-center justify-center flex-shrink-0`}>{item.iconComponent}</span>
+                                                    <span className="flex items-center gap-2 text-xs text-surface-700">
+                                                        {item.icon}
                                                         <span className="font-medium">{item.label}</span>
                                                     </span>
-                                                    <div className={`w-9 h-5 rounded-full transition-colors relative ${item.value ? 'bg-green-500' : 'bg-surface-300'}`}>
-                                                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.value ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                                    <div className={`w-8 h-4.5 rounded-full transition-colors relative ${item.value ? 'bg-green-500' : 'bg-surface-300'}`}>
+                                                        <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${item.value ? 'translate-x-[14px]' : 'translate-x-0.5'}`} />
                                                     </div>
                                                 </button>
                                             ))}
                                         </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Danger Zone: Hapus Bani - always at bottom */}
+                        {canEdit && (
+                            <div className="px-5 py-3 border-t border-surface-100 flex-shrink-0">
+                                {!showDeleteConfirm ? (
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-200"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Hapus Bani
+                                    </button>
+                                ) : (
+                                    <div className="space-y-2.5">
+                                        <div className="p-2.5 rounded-xl bg-red-50 border border-red-200">
+                                            <p className="text-[11px] text-red-700 font-medium">
+                                                Semua data anggota, pernikahan, dan log aktivitas akan dihapus permanen.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-surface-500 mb-1">
+                                                Ketik <span className="font-bold text-surface-700">{baniName}</span> untuk konfirmasi:
+                                            </p>
+                                            <input
+                                                type="text"
+                                                value={confirmDeleteName}
+                                                onChange={(e) => setConfirmDeleteName(e.target.value)}
+                                                className="w-full px-3 py-2 rounded-xl border border-red-200 text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                placeholder={baniName}
+                                            />
+                                        </div>
+                                        {deleteError && (
+                                            <p className="text-xs text-red-600">{deleteError}</p>
+                                        )}
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => { setShowDeleteConfirm(false); setConfirmDeleteName(""); setDeleteError(""); }}
+                                                className="flex-1 py-2 rounded-xl border border-surface-200 text-xs font-medium text-surface-600 hover:bg-surface-50 transition-colors"
+                                            >
+                                                Batal
+                                            </button>
+                                            <button
+                                                onClick={handleDeleteBani}
+                                                disabled={confirmDeleteName !== baniName || deletingBani}
+                                                className="flex-1 py-2 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                            >
+                                                {deletingBani ? (
+                                                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Menghapus...</>
+                                                ) : (
+                                                    <><Trash2 className="w-3.5 h-3.5" /> Hapus</>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
+                        )}
 
-                            {savingSettings && (
-                                <p className="text-xs text-primary-500 text-center animate-pulse">Menyimpan...</p>
-                            )}
-                        </div>
+                        {/* Saving / Saved indicator */}
+                        {(savingSettings || settingsSaved) && (
+                            <div className="px-5 py-2 border-t border-surface-100 flex-shrink-0">
+                                {savingSettings ? (
+                                    <p className="text-xs text-primary-500 text-center animate-pulse">Menyimpan...</p>
+                                ) : (
+                                    <p className="text-xs text-green-600 text-center flex items-center justify-center gap-1">
+                                        <Check className="w-3.5 h-3.5" /> Tersimpan
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
         </div>
     );
 }
+

@@ -10,6 +10,7 @@ import {
     Heart,
     Loader2,
     Trash2,
+    Flower2,
 } from "lucide-react";
 
 interface MemberData {
@@ -261,22 +262,22 @@ export default function EditMemberPage({
                             <button
                                 type="button"
                                 onClick={() => setGender("MALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
-                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                        : "border-surface-200 text-surface-500"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
+                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                    : "border-surface-200 text-surface-500"
                                     }`}
                             >
-                                👨 Laki-laki
+                                <User className="w-3.5 h-3.5" /> Laki-laki
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setGender("FEMALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
-                                        ? "border-pink-500 bg-pink-50 text-pink-700"
-                                        : "border-surface-200 text-surface-500"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
+                                    ? "border-pink-500 bg-pink-50 text-pink-700"
+                                    : "border-surface-200 text-surface-500"
                                     }`}
                             >
-                                👩 Perempuan
+                                <User className="w-3.5 h-3.5" /> Perempuan
                             </button>
                         </div>
                     </div>
@@ -296,12 +297,12 @@ export default function EditMemberPage({
                         <label className="block text-sm font-medium text-surface-700 mb-2">Status</label>
                         <div className="flex gap-3">
                             <button type="button" onClick={() => { setIsAlive(true); setDeathDate(""); }}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
-                                ❤️ Masih Hidup
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${isAlive ? "border-green-500 bg-green-50 text-green-700" : "border-surface-200 text-surface-500"}`}>
+                                <Heart className="w-3.5 h-3.5" /> Masih Hidup
                             </button>
                             <button type="button" onClick={() => setIsAlive(false)}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
-                                🕊️ Sudah Wafat
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${!isAlive ? "border-surface-500 bg-surface-100 text-surface-700" : "border-surface-200 text-surface-500"}`}>
+                                <Flower2 className="w-3.5 h-3.5" /> Sudah Wafat
                             </button>
                         </div>
                     </div>

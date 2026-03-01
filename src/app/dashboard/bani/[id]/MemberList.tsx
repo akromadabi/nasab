@@ -7,6 +7,7 @@ import {
     Phone,
     User,
     ChevronRight,
+    MapPin,
 } from "lucide-react";
 import { getWhatsAppLink } from "@/lib/utils";
 
@@ -151,7 +152,7 @@ export default function MemberList({
                                             )}
                                         </div>
                                         {member.city && (
-                                            <p className="text-xs text-surface-400 mt-0.5">📍 {member.city}</p>
+                                            <p className="text-xs text-surface-400 mt-0.5 flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" /> {member.city}</p>
                                         )}
                                     </div>
 

@@ -13,43 +13,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Email dan password harus diisi");
+                try {
+                    if (!credentials?.email || !credentials?.password) {
+                        throw new Error("Email dan password harus diisi");
+                    }
+
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email as string },
+                    });
+
+                    if (!user) {
+                        throw new Error("Email tidak ditemukan");
+                    }
+
+                    const isPasswordValid = await bcrypt.compare(
+                        credentials.password as string,
+                        user.password
+                    );
+
+                    if (!isPasswordValid) {
+                        throw new Error("Password salah");
+                    }
+
+                    if (user.status === "PENDING") {
+                        throw new Error("Akun Anda masih menunggu persetujuan admin");
+                    }
+
+                    if (user.status === "SUSPENDED") {
+                        throw new Error("Akun Anda telah ditangguhkan");
+                    }
+
+                    return {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role as "SUPER_ADMIN" | "ADMIN" | "USER",
+                        status: user.status as "PENDING" | "APPROVED" | "SUSPENDED",
+                        image: user.avatar,
+                    };
+                } catch (error) {
+                    console.error("[AUTH] Login error:", error);
+                    if (error instanceof Error) {
+                        throw error;
+                    }
+                    throw new Error("Gagal terhubung ke database");
                 }
-
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email as string },
-                });
-
-                if (!user) {
-                    throw new Error("Email tidak ditemukan");
-                }
-
-                const isPasswordValid = await bcrypt.compare(
-                    credentials.password as string,
-                    user.password
-                );
-
-                if (!isPasswordValid) {
-                    throw new Error("Password salah");
-                }
-
-                if (user.status === "PENDING") {
-                    throw new Error("Akun Anda masih menunggu persetujuan admin");
-                }
-
-                if (user.status === "SUSPENDED") {
-                    throw new Error("Akun Anda telah ditangguhkan");
-                }
-
-                return {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role as "SUPER_ADMIN" | "ADMIN" | "USER",
-                    status: user.status as "PENDING" | "APPROVED" | "SUSPENDED",
-                    image: user.avatar,
-                };
             },
         }),
     ],
@@ -78,4 +86,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session: {
         strategy: "jwt",
     },
+    trustHost: true,
 });

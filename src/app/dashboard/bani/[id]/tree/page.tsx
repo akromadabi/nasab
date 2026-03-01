@@ -20,6 +20,8 @@ import {
     Users,
     Loader2,
     X,
+    Flower2,
+    MapPin,
 } from "lucide-react";
 import { getWhatsAppLink } from "@/lib/utils";
 import ExportTree from "@/components/ExportTree";
@@ -325,7 +327,7 @@ function QuickAddModal({
                     {type === "child" && (
                         <div className="p-3 rounded-xl bg-primary-50 border border-primary-100">
                             <p className="text-xs font-medium text-primary-700">
-                                {member.gender === "MALE" ? "👨 Ayah" : "👩 Ibu"}:{" "}
+                                {member.gender === "MALE" ? "Ayah" : "Ibu"}:{" "}
                                 <span className="font-bold">{member.fullName}</span>
                             </p>
                         </div>
@@ -336,12 +338,12 @@ function QuickAddModal({
                             <p className="text-xs text-blue-600">Orang tua yang sama dengan {member.fullName}:</p>
                             {member.fatherId && (
                                 <p className="text-xs font-medium text-blue-700">
-                                    👨 Ayah: {allMembers.find((m) => m.id === member.fatherId)?.fullName || "—"}
+                                    Ayah: {allMembers.find((m) => m.id === member.fatherId)?.fullName || "—"}
                                 </p>
                             )}
                             {member.motherId && (
                                 <p className="text-xs font-medium text-blue-700">
-                                    👩 Ibu: {allMembers.find((m) => m.id === member.motherId)?.fullName || "—"}
+                                    Ibu: {allMembers.find((m) => m.id === member.motherId)?.fullName || "—"}
                                 </p>
                             )}
                         </div>
@@ -350,7 +352,7 @@ function QuickAddModal({
                     {type === "spouse" && (
                         <div className="p-3 rounded-xl bg-pink-50 border border-pink-100">
                             <p className="text-xs font-medium text-pink-700">
-                                💑 Pasangan dari: <span className="font-bold">{member.fullName}</span>
+                                <Heart className="w-3.5 h-3.5 inline" /> Pasangan dari: <span className="font-bold">{member.fullName}</span>
                             </p>
                         </div>
                     )}
@@ -359,7 +361,7 @@ function QuickAddModal({
                     {type === "child" && hasOneSpouse && (
                         <div className="p-3 rounded-xl bg-primary-50 border border-primary-100">
                             <p className="text-xs font-medium text-primary-700">
-                                {member.gender === "MALE" ? "👩 Ibu" : "👨 Ayah"}:{" "}
+                                {member.gender === "MALE" ? "Ibu" : "Ayah"}:{" "}
                                 <span className="font-bold">{spouses[0].fullName}</span>
                             </p>
                         </div>
@@ -427,22 +429,22 @@ function QuickAddModal({
                             <button
                                 type="button"
                                 onClick={() => setGender("MALE")}
-                                className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
+                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
                                     ? "border-blue-500 bg-blue-50 text-blue-700"
                                     : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👨 Laki-laki
+                                <User className="w-3.5 h-3.5" /> Laki-laki
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setGender("FEMALE")}
-                                className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
+                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
                                     ? "border-pink-500 bg-pink-50 text-pink-700"
                                     : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👩 Perempuan
+                                <User className="w-3.5 h-3.5" /> Perempuan
                             </button>
                         </div>
                     </div>
@@ -456,22 +458,22 @@ function QuickAddModal({
                             <button
                                 type="button"
                                 onClick={() => setIsAlive(true)}
-                                className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${isAlive
+                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${isAlive
                                     ? "border-green-500 bg-green-50 text-green-700"
                                     : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                ❤️ Hidup
+                                <Heart className="w-3 h-3" /> Hidup
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsAlive(false)}
-                                className={`flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${!isAlive
+                                className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 rounded-xl border text-sm font-medium transition-all ${!isAlive
                                     ? "border-surface-500 bg-surface-100 text-surface-700"
                                     : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                🕊️ Wafat
+                                <Flower2 className="w-3 h-3" /> Wafat
                             </button>
                         </div>
                     </div>
@@ -600,7 +602,7 @@ function TreeNode({
                                     ? "bg-pink-50 text-pink-500"
                                     : "bg-blue-50 text-blue-500"
                                     }`}>
-                                    💑 {name}
+                                    <Heart className="w-3 h-3 inline" /> {name}
                                 </p>
                             ))}
                         </div>
@@ -959,7 +961,7 @@ export default function TreePage({
                                         </span>
                                         {selectedMember.city && (
                                             <span className="text-xs px-2 py-1 rounded-lg bg-surface-100 text-surface-600">
-                                                📍 {selectedMember.city}
+                                                <MapPin className="w-3 h-3 inline" /> {selectedMember.city}
                                             </span>
                                         )}
                                     </div>

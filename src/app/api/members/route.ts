@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
                 father: { select: { id: true, fullName: true } },
                 mother: { select: { id: true, fullName: true } },
                 marriagesAsHusband: {
-                    include: { wife: { select: { id: true, fullName: true, photo: true } } },
+                    select: { id: true, marriageOrder: true, wife: { select: { id: true, fullName: true, photo: true, gender: true } } },
                     orderBy: { marriageOrder: "asc" },
                 },
                 marriagesAsWife: {
-                    include: { husband: { select: { id: true, fullName: true, photo: true } } },
+                    select: { id: true, marriageOrder: true, husband: { select: { id: true, fullName: true, photo: true, gender: true } } },
                     orderBy: { marriageOrder: "asc" },
                 },
             },

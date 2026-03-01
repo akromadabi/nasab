@@ -8,6 +8,7 @@ import {
     ChevronRight,
     ChevronLeft,
     Layers,
+    MapPin,
 } from "lucide-react";
 import { getWhatsAppLink } from "@/lib/utils";
 
@@ -97,8 +98,8 @@ export default function MobileTreeView({
                             setSelectedParentId(null);
                         }}
                         className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${currentGen === gen
-                                ? "bg-primary-600 text-white shadow-md shadow-primary-600/20"
-                                : "bg-white border border-surface-200 text-surface-600 hover:bg-surface-50"
+                            ? "bg-primary-600 text-white shadow-md shadow-primary-600/20"
+                            : "bg-white border border-surface-200 text-surface-600 hover:bg-surface-50"
                             }`}
                     >
                         Gen {gen + 1}
@@ -153,8 +154,8 @@ export default function MobileTreeView({
                                     {/* Avatar */}
                                     <div
                                         className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${member.gender === "MALE"
-                                                ? "bg-blue-50 text-blue-600"
-                                                : "bg-pink-50 text-pink-600"
+                                            ? "bg-blue-50 text-blue-600"
+                                            : "bg-pink-50 text-pink-600"
                                             } ${!member.isAlive ? "opacity-60" : ""}`}
                                     >
                                         {member.photo ? (
@@ -185,8 +186,8 @@ export default function MobileTreeView({
                                         )}
                                         <div className="flex items-center gap-3 mt-1">
                                             {member.city && (
-                                                <span className="text-xs text-surface-400">
-                                                    📍 {member.city}
+                                                <span className="text-xs text-surface-400 flex items-center gap-0.5">
+                                                    <MapPin className="w-3 h-3" /> {member.city}
                                                 </span>
                                             )}
                                             {childCount > 0 && (

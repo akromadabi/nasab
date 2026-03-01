@@ -139,7 +139,7 @@ export default function CreateBaniPage() {
 
                     <div>
                         <label className="block text-sm font-medium text-surface-700 mb-2">
-                            Nama Lengkap Leluhur
+                            Nama Lengkap Leluhur <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -147,6 +147,7 @@ export default function CreateBaniPage() {
                             onChange={(e) => setRootMemberName(e.target.value)}
                             className="touch-target w-full px-4 py-3 rounded-xl border border-surface-200 text-surface-900 placeholder-surface-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-base"
                             placeholder="Contoh: H. Ahmad Dahlan"
+                            required
                         />
                     </div>
 
@@ -158,22 +159,22 @@ export default function CreateBaniPage() {
                             <button
                                 type="button"
                                 onClick={() => setRootMemberGender("MALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${rootMemberGender === "MALE"
-                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${rootMemberGender === "MALE"
+                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👨 Laki-laki
+                                <User className="w-3.5 h-3.5" /> Laki-laki
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setRootMemberGender("FEMALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${rootMemberGender === "FEMALE"
-                                        ? "border-pink-500 bg-pink-50 text-pink-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${rootMemberGender === "FEMALE"
+                                    ? "border-pink-500 bg-pink-50 text-pink-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👩 Perempuan
+                                <User className="w-3.5 h-3.5" /> Perempuan
                             </button>
                         </div>
                     </div>

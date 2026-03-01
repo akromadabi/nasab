@@ -1,19 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Mail, Lock, Eye, EyeOff, Loader2, Shield, User } from "lucide-react";
 
+const errorMessages: Record<string, string> = {
+    Configuration: "Terjadi kesalahan konfigurasi server. Silakan hubungi admin.",
+    CredentialsSignin: "Email atau password salah.",
+    Default: "Terjadi kesalahan. Silakan coba lagi.",
+};
+
 export default function LoginPage() {
+    return (
+        <Suspense>
+            <LoginContent />
+        </Suspense>
+    );
+}
+
+function LoginContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [quickLoading, setQuickLoading] = useState<string | null>(null);
+
+    useEffect(() => {
+        const urlError = searchParams.get("error");
+        if (urlError) {
+            setError(errorMessages[urlError] || errorMessages.Default);
+        }
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -187,38 +209,40 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    {/* Quick Login for Testing */}
-                    <div className="mt-6 pt-6 border-t border-surface-200">
-                        <p className="text-center text-xs text-surface-400 mb-3">⚡ Quick Login (Testing)</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => quickLogin("admin")}
-                                disabled={!!quickLoading}
-                                className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium hover:bg-amber-100 transition-all disabled:opacity-50"
-                            >
-                                {quickLoading === "admin" ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Shield className="w-4 h-4" />
-                                )}
-                                Admin
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => quickLogin("user")}
-                                disabled={!!quickLoading}
-                                className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-all disabled:opacity-50"
-                            >
-                                {quickLoading === "user" ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <User className="w-4 h-4" />
-                                )}
-                                User
-                            </button>
+                    {/* Quick Login for Testing - only show in development */}
+                    {process.env.NODE_ENV !== "production" && (
+                        <div className="mt-6 pt-6 border-t border-surface-200">
+                            <p className="text-center text-xs text-surface-400 mb-3">⚡ Quick Login (Testing)</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => quickLogin("admin")}
+                                    disabled={!!quickLoading}
+                                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium hover:bg-amber-100 transition-all disabled:opacity-50"
+                                >
+                                    {quickLoading === "admin" ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Shield className="w-4 h-4" />
+                                    )}
+                                    Admin
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => quickLogin("user")}
+                                    disabled={!!quickLoading}
+                                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-all disabled:opacity-50"
+                                >
+                                    {quickLoading === "user" ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <User className="w-4 h-4" />
+                                    )}
+                                    User
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

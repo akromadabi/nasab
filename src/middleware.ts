@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
         request.cookies.has("__Secure-authjs.session-token");
 
     // Public routes
-    const publicRoutes = ["/", "/login", "/register", "/api/auth", "/api/register"];
+    const publicRoutes = ["/", "/login", "/register", "/api/auth", "/api/register", "/api/debug"];
     const isPublic = publicRoutes.some(
         (route) => pathname === route || pathname.startsWith(route + "/")
     );

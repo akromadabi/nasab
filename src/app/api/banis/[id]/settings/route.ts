@@ -16,7 +16,7 @@ export async function GET(
 
         const bani = await prisma.bani.findUnique({
             where: { id },
-            select: { treeOrientation: true, isPublic: true, showWaPublic: true, showBirthPublic: true, showAddressPublic: true, showSocmedPublic: true },
+            select: { treeOrientation: true, isPublic: true, showWaPublic: true, showBirthPublic: true, showAddressPublic: true, showSocmedPublic: true, cardTheme: true },
         });
 
         if (!bani) {
@@ -55,7 +55,7 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { treeOrientation, isPublic, showWaPublic, showBirthPublic, showAddressPublic, showSocmedPublic } = body;
+        const { treeOrientation, isPublic, showWaPublic, showBirthPublic, showAddressPublic, showSocmedPublic, cardTheme } = body;
 
         const updateData: any = {};
         if (treeOrientation !== undefined) updateData.treeOrientation = treeOrientation;
@@ -64,11 +64,12 @@ export async function PATCH(
         if (showBirthPublic !== undefined) updateData.showBirthPublic = showBirthPublic;
         if (showAddressPublic !== undefined) updateData.showAddressPublic = showAddressPublic;
         if (showSocmedPublic !== undefined) updateData.showSocmedPublic = showSocmedPublic;
+        if (cardTheme !== undefined) updateData.cardTheme = cardTheme;
 
         const updated = await prisma.bani.update({
             where: { id },
             data: updateData,
-            select: { treeOrientation: true, isPublic: true, showWaPublic: true, showBirthPublic: true, showAddressPublic: true, showSocmedPublic: true },
+            select: { treeOrientation: true, isPublic: true, showWaPublic: true, showBirthPublic: true, showAddressPublic: true, showSocmedPublic: true, cardTheme: true },
         });
 
         return NextResponse.json(updated);

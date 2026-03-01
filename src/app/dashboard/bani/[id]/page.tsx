@@ -34,6 +34,7 @@ export default async function BaniDetailPage({ params }: PageProps) {
             showBirthPublic: true,
             showAddressPublic: true,
             showSocmedPublic: true,
+            cardTheme: true,
             createdBy: { select: { name: true } },
             rootMember: { select: { id: true, fullName: true } },
             _count: { select: { members: true } },
@@ -92,6 +93,13 @@ export default async function BaniDetailPage({ params }: PageProps) {
     });
 
     const canEdit = baniUser?.role !== "VIEWER";
+
+    // Check if user is on free (default) tier for watermark
+    const userWithTier = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { tier: { select: { isDefault: true } } },
+    });
+    const isFreeUser = !userWithTier?.tier || userWithTier.tier.isDefault;
 
     return (
         <div className="max-w-6xl mx-auto space-y-4">
@@ -158,6 +166,8 @@ export default async function BaniDetailPage({ params }: PageProps) {
                 initialShowBirth={baniData.showBirthPublic}
                 initialShowAddress={baniData.showAddressPublic}
                 initialShowSocmed={baniData.showSocmedPublic}
+                isFreeUser={isFreeUser}
+                initialCardTheme={baniData.cardTheme}
             />
         </div>
     );

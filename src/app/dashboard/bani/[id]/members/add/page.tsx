@@ -12,6 +12,7 @@ import {
     Loader2,
     Camera,
     Heart,
+    Flower2,
 } from "lucide-react";
 
 interface ParentOption {
@@ -192,22 +193,22 @@ export default function AddMemberPage({
                             <button
                                 type="button"
                                 onClick={() => setGender("MALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
-                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "MALE"
+                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👨 Laki-laki
+                                <User className="w-3.5 h-3.5" /> Laki-laki
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setGender("FEMALE")}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
-                                        ? "border-pink-500 bg-pink-50 text-pink-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === "FEMALE"
+                                    ? "border-pink-500 bg-pink-50 text-pink-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                👩 Perempuan
+                                <User className="w-3.5 h-3.5" /> Perempuan
                             </button>
                         </div>
                     </div>
@@ -247,22 +248,22 @@ export default function AddMemberPage({
                             <button
                                 type="button"
                                 onClick={() => { setIsAlive(true); setDeathDate(""); }}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${isAlive
-                                        ? "border-green-500 bg-green-50 text-green-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${isAlive
+                                    ? "border-green-500 bg-green-50 text-green-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                ❤️ Masih Hidup
+                                <Heart className="w-3.5 h-3.5" /> Masih Hidup
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsAlive(false)}
-                                className={`touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${!isAlive
-                                        ? "border-surface-500 bg-surface-100 text-surface-700"
-                                        : "border-surface-200 text-surface-500 hover:bg-surface-50"
+                                className={`flex items-center justify-center gap-1.5 touch-target flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${!isAlive
+                                    ? "border-surface-500 bg-surface-100 text-surface-700"
+                                    : "border-surface-200 text-surface-500 hover:bg-surface-50"
                                     }`}
                             >
-                                🕊️ Sudah Wafat
+                                <Flower2 className="w-3.5 h-3.5" /> Sudah Wafat
                             </button>
                         </div>
                     </div>

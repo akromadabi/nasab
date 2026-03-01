@@ -84,6 +84,7 @@ model Bani {
   showBirthPublic Boolean         @default(false) @map("show_birth_public")
   showAddressPublic Boolean       @default(false) @map("show_address_public")
   showSocmedPublic Boolean        @default(false) @map("show_socmed_public")
+  cardTheme       CardTheme       @default(STANDARD) @map("card_theme")
   createdById     String          @map("created_by_id")
   rootMemberId    String?         @unique @map("root_member_id")
   createdAt       DateTime        @default(now()) @map("created_at")
@@ -102,6 +103,15 @@ model Bani {
 enum TreeOrientation {
   VERTICAL
   HORIZONTAL
+}
+
+enum CardTheme {
+  STANDARD
+  CLASSIC
+  GRADIENT
+  GLASS
+  DARK
+  NATURE
 }
 
 // ==========================================

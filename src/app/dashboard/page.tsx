@@ -13,6 +13,8 @@ import {
     Activity,
     Shield,
     Eye,
+    Settings,
+    ExternalLink,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -86,8 +88,7 @@ export default async function DashboardPage() {
                     Assalamualaikum,{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-500">
                         {session.user.name}
-                    </span>{" "}
-                    👋
+                    </span>
                 </h1>
                 <p className="text-surface-500 mt-1">
                     Selamat datang kembali di Jejak Nasab
@@ -260,43 +261,64 @@ export default async function DashboardPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {baniUsers.map((bu) => (
-                            <Link
+                            <div
                                 key={bu.id}
-                                href={`/dashboard/bani/${bu.bani.id}`}
-                                className="group p-5 rounded-2xl bg-white border border-surface-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300"
+                                className="rounded-2xl bg-white border border-surface-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md shadow-primary-500/20">
-                                        <TreePine className="w-6 h-6 text-white" />
+                                <Link
+                                    href={`/dashboard/bani/${bu.bani.id}`}
+                                    className="block p-5"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md shadow-primary-500/20">
+                                            <TreePine className="w-6 h-6 text-white" />
+                                        </div>
+                                        {bu.role === "ADMIN" && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gold-50 text-gold-700 text-xs font-medium">
+                                                <Crown className="w-3 h-3" /> Admin
+                                            </span>
+                                        )}
                                     </div>
-                                    {bu.role === "ADMIN" && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gold-50 text-gold-700 text-xs font-medium">
-                                            <Crown className="w-3 h-3" /> Admin
-                                        </span>
+                                    <h3 className="text-base font-semibold text-surface-900 group-hover:text-primary-700 transition-colors">
+                                        {bu.bani.name}
+                                    </h3>
+                                    {bu.bani.description && (
+                                        <p className="text-sm text-surface-500 mt-1 line-clamp-2">
+                                            {bu.bani.description}
+                                        </p>
                                     )}
-                                </div>
-                                <h3 className="text-base font-semibold text-surface-900 group-hover:text-primary-700 transition-colors">
-                                    {bu.bani.name}
-                                </h3>
-                                {bu.bani.description && (
-                                    <p className="text-sm text-surface-500 mt-1 line-clamp-2">
-                                        {bu.bani.description}
-                                    </p>
+                                    <div className="flex items-center gap-4 mt-4 pt-3 border-t border-surface-100">
+                                        <span className="text-xs text-surface-400 flex items-center gap-1">
+                                            <Users className="w-3.5 h-3.5" />
+                                            {bu.bani._count.members} anggota
+                                        </span>
+                                        <span className="text-xs text-surface-400 flex items-center gap-1">
+                                            <Calendar className="w-3.5 h-3.5" />
+                                            {new Date(bu.joinedAt).toLocaleDateString("id-ID", {
+                                                month: "short",
+                                                year: "numeric",
+                                            })}
+                                        </span>
+                                    </div>
+                                </Link>
+                                {/* Action bar */}
+                                {bu.role === "ADMIN" && (
+                                    <div className="flex border-t border-surface-100">
+                                        <Link
+                                            href={`/dashboard/bani/${bu.bani.id}?settings=true`}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-surface-500 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                                        >
+                                            <Settings className="w-3.5 h-3.5" /> Pengaturan
+                                        </Link>
+                                        <Link
+                                            href={`/dashboard/bani/${bu.bani.id}`}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-surface-500 hover:text-primary-600 hover:bg-primary-50 transition-colors border-l border-surface-100"
+                                        >
+                                            <ExternalLink className="w-3.5 h-3.5" /> Buka
+                                        </Link>
+                                    </div>
                                 )}
-                                <div className="flex items-center gap-4 mt-4 pt-3 border-t border-surface-100">
-                                    <span className="text-xs text-surface-400 flex items-center gap-1">
-                                        <Users className="w-3.5 h-3.5" />
-                                        {bu.bani._count.members} anggota
-                                    </span>
-                                    <span className="text-xs text-surface-400 flex items-center gap-1">
-                                        <Calendar className="w-3.5 h-3.5" />
-                                        {new Date(bu.joinedAt).toLocaleDateString("id-ID", {
-                                            month: "short",
-                                            year: "numeric",
-                                        })}
-                                    </span>
-                                </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}

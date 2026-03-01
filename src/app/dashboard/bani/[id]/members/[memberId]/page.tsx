@@ -12,6 +12,7 @@ import {
     Heart,
     GitBranch,
     MessageCircle,
+    Flower2,
 } from "lucide-react";
 import { formatDate, getWhatsAppLink, getInitials } from "@/lib/utils";
 
@@ -102,8 +103,8 @@ export default async function MemberDetailPage({ params }: PageProps) {
                     {/* Avatar */}
                     <div
                         className={`w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0 ${member.gender === "MALE"
-                                ? "bg-blue-100 text-blue-600"
-                                : "bg-pink-100 text-pink-600"
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-pink-100 text-pink-600"
                             } ${!member.isAlive ? "opacity-60" : ""}`}
                     >
                         {member.photo ? (
@@ -122,8 +123,8 @@ export default async function MemberDetailPage({ params }: PageProps) {
                                 {member.fullName}
                             </h2>
                             {!member.isAlive && (
-                                <span className="px-2 py-0.5 rounded-lg bg-surface-100 text-surface-500 text-xs font-medium">
-                                    🕊️ Almarhum/ah
+                                <span className="px-2 py-0.5 rounded-lg bg-surface-100 text-surface-500 text-xs font-medium inline-flex items-center gap-0.5">
+                                    <Flower2 className="w-3 h-3" /> Almarhum/ah
                                 </span>
                             )}
                         </div>
@@ -135,18 +136,18 @@ export default async function MemberDetailPage({ params }: PageProps) {
                         <div className="flex flex-wrap gap-2 mt-3">
                             <span
                                 className={`text-xs px-2.5 py-1 rounded-lg font-medium ${member.gender === "MALE"
-                                        ? "bg-blue-50 text-blue-700"
-                                        : "bg-pink-50 text-pink-700"
+                                    ? "bg-blue-50 text-blue-700"
+                                    : "bg-pink-50 text-pink-700"
                                     }`}
                             >
-                                {member.gender === "MALE" ? "👨 Laki-laki" : "👩 Perempuan"}
+                                {member.gender === "MALE" ? "Laki-laki" : "Perempuan"}
                             </span>
                             <span className="text-xs px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 font-medium">
                                 Generasi {member.generation + 1}
                             </span>
                             {member.isAlive && (
                                 <span className="text-xs px-2.5 py-1 rounded-lg bg-green-50 text-green-700 font-medium">
-                                    ❤️ Hidup
+                                    <Heart className="w-3 h-3" /> Hidup
                                 </span>
                             )}
                         </div>
@@ -236,7 +237,7 @@ export default async function MemberDetailPage({ params }: PageProps) {
                             <p className="text-sm text-surface-900">{member.address}</p>
                         )}
                         {member.city && (
-                            <p className="text-sm text-surface-600">📍 {member.city}</p>
+                            <p className="text-sm text-surface-600 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {member.city}</p>
                         )}
                     </div>
                 )}
@@ -307,8 +308,8 @@ export default async function MemberDetailPage({ params }: PageProps) {
                                 >
                                     <div
                                         className={`w-10 h-10 rounded-full flex items-center justify-center ${spouse.gender === "MALE"
-                                                ? "bg-blue-100 text-blue-600"
-                                                : "bg-pink-100 text-pink-600"
+                                            ? "bg-blue-100 text-blue-600"
+                                            : "bg-pink-100 text-pink-600"
                                             }`}
                                     >
                                         <Heart className="w-5 h-5" />
@@ -344,8 +345,8 @@ export default async function MemberDetailPage({ params }: PageProps) {
                                 >
                                     <div
                                         className={`w-10 h-10 rounded-full flex items-center justify-center ${child.gender === "MALE"
-                                                ? "bg-blue-100 text-blue-600"
-                                                : "bg-pink-100 text-pink-600"
+                                            ? "bg-blue-100 text-blue-600"
+                                            : "bg-pink-100 text-pink-600"
                                             } ${!child.isAlive ? "opacity-60" : ""}`}
                                     >
                                         <User className="w-5 h-5" />

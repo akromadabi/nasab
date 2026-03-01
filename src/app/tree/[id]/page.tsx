@@ -93,7 +93,7 @@ export default async function PublicTreePage({ params }: PageProps) {
                             <p className="text-[10px] sm:text-xs text-primary-200">Generasi</p>
                         </div>
                         <div className="bg-white/10 rounded-xl p-2 sm:p-3 text-center">
-                            <span className="text-sm">👨‍👩</span>
+                            <Users className="w-4 h-4 mx-auto mb-1 text-purple-300" />
                             <p className="text-lg sm:text-xl font-bold">{totalMale}/{totalFemale}</p>
                             <p className="text-[10px] sm:text-xs text-primary-200">L / P</p>
                         </div>

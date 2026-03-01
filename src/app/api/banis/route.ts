@@ -48,6 +48,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Nama bani harus diisi" }, { status: 400 });
         }
 
+        if (!rootMemberName) {
+            return NextResponse.json({ error: "Nama leluhur (asal nasab) harus diisi" }, { status: 400 });
+        }
+
         // Check tier limit
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },

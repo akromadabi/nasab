@@ -1,9 +1,7 @@
 #!/bin/bash
 # ============================================
-# Jejak Nasab — Deploy Script untuk cPanel
-# Jalankan di Terminal cPanel:
-#   source /home/diantar2/nodevenv/nasab.groovy-media.com/20/bin/activate
-#   cd ~/nasab.groovy-media.com && bash deploy.sh
+# Jejak Nasab — Setup Script untuk cPanel
+# Standalone build sudah di-extract ke root
 # ============================================
 
 set -e
@@ -11,23 +9,12 @@ set -e
 APP_DIR="$HOME/nasab.groovy-media.com"
 ENV_FILE="$APP_DIR/.env"
 
-echo "🚀 Memulai deployment Jejak Nasab..."
+echo "🚀 Memulai setup Jejak Nasab..."
 echo "========================================"
 
-# 1. Pull latest dari GitHub (skip jika bukan git repo)
+# 1. Cek & buat .env jika belum ada
 echo ""
-echo "📥 [1/7] Pulling dari GitHub..."
-cd "$APP_DIR"
-if [ -d ".git" ]; then
-    git pull origin master
-    echo "✅ Pull selesai."
-else
-    echo "⚠️  Bukan git repo (deploy via ZIP). Skip git pull."
-fi
-
-# 2. Cek & buat .env jika belum ada
-echo ""
-echo "📄 [2/7] Mengecek file .env..."
+echo "📄 [1/3] Mengecek file .env..."
 if [ ! -f "$ENV_FILE" ]; then
     echo "⚠️  File .env belum ada. Membuat template..."
     cat > "$ENV_FILE" << 'ENVEOF'
@@ -43,49 +30,22 @@ else
     echo "✅ File .env sudah ada."
 fi
 
-# 3. Install dependencies
+# 2. Buat folder uploads
 echo ""
-echo "📦 [3/7] Installing dependencies..."
-npm install --production
-echo "✅ Dependencies terinstall."
+echo "📁 [2/3] Menyiapkan folder uploads..."
+mkdir -p "$APP_DIR/public/uploads"
+echo "✅ Folder uploads siap."
 
-# 4. Generate Prisma Client
+# 3. Info
 echo ""
-echo "🔧 [4/7] Generating Prisma Client..."
-npx prisma generate
-echo "✅ Prisma Client generated."
-
-# 5. Build aplikasi
-echo ""
-echo "🏗️  [5/7] Building aplikasi..."
-npm run build
-echo "✅ Build selesai."
-
-# 6. Buat folder uploads & salin .env ke standalone
-echo ""
-echo "📁 [6/7] Menyiapkan folder & file..."
-mkdir -p "$APP_DIR/.next/standalone/public/uploads"
-cp "$ENV_FILE" "$APP_DIR/.next/standalone/.env"
-
-# Salin static files ke standalone
-if [ -d "$APP_DIR/.next/static" ]; then
-    cp -r "$APP_DIR/.next/static" "$APP_DIR/.next/standalone/.next/"
-fi
-if [ -d "$APP_DIR/public" ]; then
-    cp -r "$APP_DIR/public" "$APP_DIR/.next/standalone/"
-fi
-echo "✅ Folder & file siap."
-
-# 7. Info startup
-echo ""
-echo "📌 [7/7] Konfigurasi Node.js App..."
+echo "📌 [3/3] Info..."
 echo "========================================"
 echo ""
-echo "✅ Deployment selesai!"
+echo "✅ Setup selesai!"
 echo ""
 echo "🔧 Pastikan di Setup Node.js App cPanel:"
 echo "   - Application root : nasab.groovy-media.com"
-echo "   - Startup file     : .next/standalone/server.js"
+echo "   - Startup file     : server.js"
 echo ""
 echo "Lalu klik RESTART di Node.js App Setup."
 echo ""
